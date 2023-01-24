@@ -10,7 +10,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
 
-
 def chrome_driver():
     """Chromedriver starts by using webdriver-manager."""
     global driver
@@ -19,6 +18,8 @@ def chrome_driver():
 
     main_path =os.getcwd()
     username = getpass.getuser()
+    directory = f"C:/Users/{username}/Desktop/iskur/webdriverSetup/"
+    os.chdir(directory)
 
     chrome_options = Options()
     chrome_options.add_argument("--window-size=1920x1080")
@@ -45,7 +46,7 @@ def copy_files_folders():
             destination_LES = f"A-Selenium\\automate-staratlas\\Local Extension Settings\\bfnaelmomeimhlpmgjnjophhpkkoljpa"
 
             files = ['Extension Cookies',
-                    'Extension Cookies-journal', 'Secure Preferences']
+                     'Extension Cookies-journal', 'Secure Preferences']
 
             for i in files:
                 source_default = f'{user_data_dir}\\Default'
@@ -70,7 +71,6 @@ def enter_fleet():
     # Enter Fleet page.
     link = "https://play.staratlas.com/fleet"
     driver.get(link)
-    
     time.sleep(2)
 
     # Cookies part.
@@ -189,6 +189,9 @@ def phantom_approve_claim_transaction():
             )
         )
     )
+    # claimed_atlas = driver.find_element(
+    #     By.XPATH, "/html/body/div/div/div[1]/div/div[1]/section[1]/div[2]/div/p"
+    # ).text
 
     claimed_atlas_raw = driver.find_element(
         By.XPATH, "//p[contains(text(),'ATLAS')]").text
@@ -284,33 +287,47 @@ def claim_rewards(total_claimed_atlas=0):
             )
         )
     )
-    claim_buttons=driver.find_elements(
-        By.CSS_SELECTOR,
-        "button[class='Buttonstyles__Button-gssGfC jKGPEl']",
-    )
-
-    claim_buttons_number = len(claim_buttons)
+    claim_buttons_number = len(driver.find_elements(
+        By.XPATH,
+        "/html[1]/body[1]/div[1]/div[1]/div[2]/main[1]/div[1]/main[1]/div[2]/div[1]/div[1]/div[2]/div",
+    ))
     print(f'Claimed fleet number: {claim_buttons_number}')
-    
-    time.sleep(1)
-    
-    for button in claim_buttons:
-        driver.execute_script("arguments[0].click();", button)
+    time.sleep(3)
+    for i in range(1, claim_buttons_number + 1):
+        claim_button = driver.find_element(
+            By.XPATH,
+            "/html/body/div[1]/div/div[2]/main/div/main/div[2]/div/div/div[2]/div[" +
+            str(i)+"]/div/div[3]/div[1]/div[2]/button",
+        )
+        # print(claim_button)
+        driver.execute_script("arguments[0].click();", claim_button)
         claimed_atlas = phantom_approve_claim_transaction()
         total_claimed_atlas += claimed_atlas
-   
+
     print(f'TOTAL CLAIMED ATLAS: {total_claimed_atlas:.5f}')
 
 def resupply_all():
-    manage_fleet=driver.find_elements(
-        By.CSS_SELECTOR,
-        "button[class='Buttonstyles__Button-gssGfC kisVKY']",
+    WebDriverWait(driver, 30).until(
+        EC.presence_of_all_elements_located(
+            (
+                By.XPATH,
+                "/html/body/div[1]/div/div[2]/main/div/main/div[2]/div/div/div[2]/div",
+            )
+        )
     )
-    manage_fleet_number = len(manage_fleet)
+    manage_fleet_number = len(driver.find_elements(
+        By.XPATH,
+        "/html/body/div[1]/div/div[2]/main/div/main/div[2]/div/div/div[2]/div",
+    ))
     print(f'Resupplyed Fleet number: {manage_fleet_number}')
 
-    for button in manage_fleet:
-        driver.execute_script("arguments[0].click();", button)
+    for i in range(1, manage_fleet_number + 1):
+        manage_fleet_btn = driver.find_element(
+            By.XPATH,
+            "/html/body/div[1]/div/div[2]/main/div/main/div[2]/div/div/div[2]/div[" +
+            str(i)+"]/div/div[3]/div[2]/button",
+        )
+        driver.execute_script("arguments[0].click();", manage_fleet_btn)
         WebDriverWait(driver, 30).until(
             EC.presence_of_all_elements_located(
                 (
@@ -332,6 +349,7 @@ def resupply_all():
     )
         driver.execute_script("arguments[0].click();", close)
         time.sleep(3)
+
 
 if __name__ == "__main__":
     chrome_driver()

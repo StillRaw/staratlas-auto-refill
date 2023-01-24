@@ -1,0 +1,3 @@
+-Create PageBase.py and class to refactor most using code like expected_conditions.
+-Regulate staratlas.py by creating class and inheriting it by PageBase.
+-In staratlas.py rewrite copy_files_folders func. Find profiles and caopy file from there not from Default profile.
